@@ -2,15 +2,37 @@
 
 **Minting Engine** — Dedicated backend for blockchain mint, pin, and transfer — extracted from the flagship verifier.
 
-Part of the [ComputerPets](https://github.com/RicheyWorks/computerpets) ecosystem. Index: [computerpets-ecosystem](https://github.com/RicheyWorks/computerpets-ecosystem).
+Part of [ComputerPets](https://github.com/RicheyWorks/computerpets). Map: [computerpets-ecosystem](https://github.com/RicheyWorks/computerpets-ecosystem).
 
-> Status: **design scaffold**. This repository ships the contract, README, and layout so implementation can start without renaming the organ later.
+| | |
+| --- | --- |
+| Status | Design scaffold — contract frozen, implementation next |
+| License | MIT |
+| First pet | Still [Rui on the desktop](https://github.com/RicheyWorks/computerpets/blob/main/docs/START-HERE.md). This organ is optional. |
 
-## Why it exists
+## The job
 
 Flagship already checks Ethereum ownership. Minter is the write path: pin metadata, mint, transfer, burn. One service so Steam and the overlay never talk to a chain RPC themselves.
 
 The flagship overlay already puts a living sticker on the real desktop (Rui first, 210 kinds). Minter does not replace that. It is one organ.
+
+## Who uses it
+
+Bazaar, Studio, Hatchery, Ledger. The only chain write path.
+
+## What it is not
+
+Not a wallet. Overlay never talks to an RPC. Steamgate never talks to an RPC.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  studio -->|pin+mint| minter
+  bazaar -->|transfer| minter
+  minter --> chain
+  minter --> ledger
+```
 
 ## Stack
 
@@ -18,14 +40,6 @@ Java 21 · Spring Boot 3.3 · web3j 4.12 · IPFS / Pinata · Flyway · PostgreSQ
 
 GroupId / namespace: `com.enterprisepet.minter`  
 Default listen: `8081`
-
-## Talks to
-
-- computerpets Spring verifier
-- computerpets-bazaar
-- computerpets-atelier
-- computerpets-ledger
-- computerpets-studio
 
 ## Contract
 
@@ -44,6 +58,28 @@ Default listen: `8081`
 ### Failure doctrine
 
 RPC flake → Resilience4j retry + circuit open. Underpriced gas → park job. Reorg below N confirms → do not credit overlay unlock.
+
+## First slice
+
+Build this and stop. Do not boil the ocean.
+
+**Pin metadata + mint on a testnet + confirmation watcher. Flyway table `mint_job`.**
+
+You know it works when: RPC flake: retry then circuit open. Under N confirms: overlay does not unlock. Reorg: job parked.
+
+## Environment
+
+`RPC_URL`, `MINTER_KEY_VAULT`, `IPFS_PIN`, `DATABASE_URL`
+
+Never commit secrets. Never put Steam or chain keys in the overlay.
+
+## Neighbors
+
+- computerpets Spring verifier
+- computerpets-bazaar
+- computerpets-atelier
+- computerpets-ledger
+- computerpets-studio
 
 ## Layout
 
@@ -65,13 +101,12 @@ mvn -q -DskipTests package; java -jar target/minter-1.0.0-SNAPSHOT.jar
 
 You do not need this service to meet Rui. The [flagship start-here](https://github.com/RicheyWorks/computerpets/blob/main/docs/START-HERE.md) is still the first pet.
 
-## Ecosystem
+## Links
 
-| Organ | Repo |
-| --- | --- |
-| Flagship desktop + Spring | [RicheyWorks/computerpets](https://github.com/RicheyWorks/computerpets) |
-| This organ | [RicheyWorks/computerpets-minter](https://github.com/RicheyWorks/computerpets-minter) |
-| Full map | [RicheyWorks/computerpets-ecosystem](https://github.com/RicheyWorks/computerpets-ecosystem) |
+- Flagship: [RicheyWorks/computerpets](https://github.com/RicheyWorks/computerpets)
+- This repo: [RicheyWorks/computerpets-minter](https://github.com/RicheyWorks/computerpets-minter)
+- Map: [RicheyWorks/computerpets-ecosystem](https://github.com/RicheyWorks/computerpets-ecosystem)
+- Contract file: [docs/CONTRACT.md](docs/CONTRACT.md)
 
 ## License
 
